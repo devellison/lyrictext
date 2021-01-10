@@ -306,22 +306,20 @@ const string ParamHelpConst =
 "Font @list1000:\n" +
 "Font size\n" +
 "Letter spacing\n" +
-"A/R FX @checkbox\n" +
+"Attack/Release @checkbox\n" +
 "FX per @list: Line, Word\n" +
 "Attack FX @list1000: None,Fade,Blur,Expander, VertSlide,HorzSlide,FontScale\n" +
-" Length\n" +
+"Attack Length\n" +
 "Hold FX @list1000: None, Rise, Wander\n" +
-" Length\n" +
-" Hold Strength\n" +
+"Hold Length\n" +
+"Hold Strength\n" +
 "Release FX @list1000: None,Fade,Blur,Expander,VertSlide,HorzSlide,FontScale\n" +
-" Length\n" +
+"Release Length\n" +
 "Beat FX @list1000: None,Fade,Blur,Expander,FontScale\n" +
 "Beat Strength\n" +
 "Beat Wave @list: Saw,1-Saw, Sin, 1-Sin\n" +
-"MIDI Line @checkbox\n" +
-"MIDI Hold @checkbox\n" +
-" Channel @list: Any,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16\n" +
-" First Note @list: C0,C1,C2,C3,C4,C5,C6,C7,C8,C9\n"
+"MIDI Chan @list: None,Any,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16\n" +
+"First Note @list: C0,C1,C2,C3,C4,C5,C6,C7,C8,C9\n"
 ;
 
 
@@ -349,11 +347,9 @@ const int
   P_BEAT_FX = 20,
   P_STRENGTH = 21,
   P_WAVE = 22,
-  P_MIDI_LINE = 23,
-  P_MIDI_HOLD = 24,
-  P_MIDI_CHANNEL = 25,
-  P_MIDI_FIRST = 26,
-  NUM_OF_PARAMS = 27;
+  P_MIDI_CHANNEL = 23,
+  P_MIDI_FIRST = 24,
+  NUM_OF_PARAMS = 25;
 
 const int
   NUM_ATTACK_FX_TYPES = 7,
@@ -361,7 +357,7 @@ const int
   NUM_RELEASE_FX_TYPES = 7,
   NUM_BEAT_FX_TYPES = 5,
   NUM_WAVE_TYPES = 4,
-  NUM_MIDI_CHANNELS=17,
+  NUM_MIDI_CHANNELS=18,
   NUM_FIRST_NOTES=10;
 
 // Effects maps by type
@@ -856,8 +852,10 @@ void OnNoteOff(int channel, int note)
 
 void OnMidiMessage(int status, int data1, int data2)
 {
+  int midOpt = Parameters[P_MIDI_CHANNEL]*NUM_MIDI_CHANNELS;
+  trace("midOpt: " + intToStr(midOpt));
   // Skip if MIDI isn't enabled
-  if (Parameters[P_MIDI_LINE] < 0.5)
+  if (midOpt == 0)
   {
     return;
   }
@@ -865,10 +863,10 @@ void OnMidiMessage(int status, int data1, int data2)
   int channel = status & 0x0f;
   int opcode = status & 0xf0;
 
-  // Skip if channel doesn't match (first is ANY)
-  if (Parameters[P_MIDI_CHANNEL] != 0)
+  // Skip if channel doesn't match (first is none, second is any, hence -2)
+  if (midOpt > 1)
   {
-    int ourChannel = Parameters[P_MIDI_CHANNEL]*NUM_MIDI_CHANNELS - 1;
+    int ourChannel =  midOpt - 2;
     if (channel != ourChannel)
     {
       return;
@@ -1333,7 +1331,7 @@ nvg_Finish(NvgContext);]]>
   <Content>
     <Array Name="Parameters" SizeDim1="28" Persistent="255">
       <Values>
-<![CDATA[789C636000037B0604B047C260306BE64C3B08BF012C962FD46C0DA4EC80B4952D5738586ED9EC2350316620DD6007D1D900D773F6CC19B01800AFBA0FF7]]>
+<![CDATA[789C636000037B0604B047C260306BE64C3B08BF012C962FD46C0DA4EC80B4952D5738586ED9EC2350316620DD001263783C21D9F6EC9933764866330000D4DF108C]]>
       </Values>
     </Array>
     <Array Name="SpecBandArray"/>
