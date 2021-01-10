@@ -310,7 +310,7 @@ const string ParamHelpConst =
 "FX per @list: Line, Word\n" +
 "Attack FX @list1000: None,Fade,Blur,Expander, VertSlide,HorzSlide,FontScale\n" +
 " Length\n" +
-"Hold FX @list1000: None, Rise\n" +
+"Hold FX @list1000: None, Rise, Wander\n" +
 " Length\n" +
 " Hold Strength\n" +
 "Release FX @list1000: None,Fade,Blur,Expander,VertSlide,HorzSlide,FontScale\n" +
@@ -357,7 +357,7 @@ const int
 
 const int
   NUM_ATTACK_FX_TYPES = 7,
-  NUM_HOLD_FX_TYPES = 2,
+  NUM_HOLD_FX_TYPES = 3,
   NUM_RELEASE_FX_TYPES = 7,
   NUM_BEAT_FX_TYPES = 5,
   NUM_WAVE_TYPES = 4,
@@ -433,7 +433,8 @@ const int
   FX_TYPE_VERTICAL = 4,
   FX_TYPE_HORZSLIDE = 5,
   FX_TYPE_FONTSCALE = 6,
-  FX_TYPE_RISE = 7;
+  FX_TYPE_RISE = 7,
+  FX_TYPE_WANDER = 8;
 
 const int WAVE_SAW = 0,
           WAVE_SAW_1 = 1,
@@ -482,6 +483,10 @@ float Blur;
 // hold into release.
 float VertOffset;
 float HorzOffset;
+
+// Similar here, but they need to be cumulative
+float FXWanderX;
+float FXWanderY;
 
 
 // font TTF files
@@ -780,6 +785,15 @@ float RiseEffect(int sequence, float position)
       break;
   }
   return rise;
+}
+
+void WanderEffect(int sequence, float position)
+{
+  if (sequence == FX_HOLD)
+  {
+    FXWanderX += random(0,Parameters[P_HOLD_STRENGTH]*2);
+    FXWanderY += random(0,Parameters[P_HOLD_STRENGTH]*2);
+  }
 }]]>
       </Source>
     </ZLibrary>
@@ -819,6 +833,8 @@ float RiseEffect(int sequence, float position)
        FXSequenceStart = SongPositionInBeats;
        HorzOffset = 0;
        VertOffset = 0;
+       FXWanderX = 0;
+       FXWanderY = 0;
   }
 }
 
@@ -928,6 +944,7 @@ AttackFXTypes[6]  = FX_TYPE_FONTSCALE;
 
 HoldFXTypes[0]  = FX_TYPE_NONE;
 HoldFXTypes[1]  = FX_TYPE_RISE;
+HoldFXTypes[2]  = FX_TYPE_WANDER;
 
 ReleaseFXTypes[0] = FX_TYPE_NONE;
 ReleaseFXTypes[1] = FX_TYPE_FADE;
@@ -1069,6 +1086,8 @@ if (!MIDITriggered)
     FXSequenceStart = SongPositionInBeats;
     HorzOffset = 0;
     VertOffset = 0;
+    FXWanderX = 0;
+    FXWanderY = 0;
   }
 
 
@@ -1079,6 +1098,8 @@ if (!MIDITriggered)
     FXSequenceStart = SongPositionInBeats;
     HorzOffset = 0;
     VertOffset = 0;
+    FXWanderX = 0;
+    FXWanderY = 0;
   }
 }
 
@@ -1225,6 +1246,9 @@ switch (FXType)
   case FX_TYPE_RISE:
     VertOffset = RiseEffect(FXSequence,FXPosition)*HoldStrength*50;
     break;
+  case FX_TYPE_WANDER:
+    WanderEffect(FXSequence,FXPosition);
+    break;
  }
 
 // If fade transitions...
@@ -1281,7 +1305,7 @@ if (FXSequence != FX_NONE)
   nvg_FillColor(Color.R, Color.G, Color.B, Color.A * FadeAlpha);
   nvg_FontBlur(Blur);
 
-  nvg_Translate(PosX, PosY+VertOffset);
+  nvg_Translate(PosX+FXWanderX+HorzOffset, PosY+VertOffset+FXWanderY);
   nvg_Rotate(Rotation);
   nvg_TextLetterSpacing(LetterSpacing);
 
