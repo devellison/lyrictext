@@ -322,7 +322,9 @@ const string ParamHelpConst =
 "Beat Strength\n" +
 "Beat Wave @list: Saw,1-Saw, Sin, 1-Sin\n" +
 "MIDI Chan @list: None,Any,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16\n" +
-"First Note @list: C0,C1,C2,C3,C4,C5,C6,C7,C8,C9\n"
+"First Note @list: C0,C1,C2,C3,C4,C5,C6,C7,C8,C9\n" +
+"A/R Len Scale @list: 1,2,4,8,16,32\n"+
+"Hold Len Scale @list: 1,2,4,8,16,32\n"
 ;
 
 // Parameter index values
@@ -353,7 +355,9 @@ const int
   P_WAVE = 23,
   P_MIDI_CHANNEL = 24,
   P_MIDI_FIRST = 25,
-  NUM_OF_PARAMS = 26;
+  P_AR_LEN_SCALE = 26,
+  P_HOLD_LEN_SCALE = 27,
+  NUM_OF_PARAMS = 28;
 
 // Number of items in lists
 const int
@@ -363,7 +367,9 @@ const int
   NUM_BEAT_FX_TYPES = 5,
   NUM_WAVE_TYPES = 4,
   NUM_MIDI_CHANNELS=18,
-  NUM_FIRST_NOTES=10;
+  NUM_FIRST_NOTES=10,
+  NUM_AR_LEN = 6,
+  NUM_HOLD_LEN = 6;
 
 // Effects maps by type
 int[NUM_ATTACK_FX_TYPES]  AttackFXTypes;
@@ -1151,10 +1157,16 @@ if (Length(Text) & 1)
 }
 
 // Scale attack/hold/release values to usable numbers of beats.
-float FXScale    = 16;
-float AttackLen  = Parameters[P_ATTACK_LEN] * 4;
-float HoldLen    = Parameters[P_HOLD_LEN]   * FXScale;
-float ReleaseLen = Parameters[P_RELEASE_LEN]* 4;
+float ARScaleIndex = Parameters[P_AR_LEN_SCALE] * NUM_AR_LEN;
+float HoldScaleIndex = Parameters[P_HOLD_LEN_SCALE] * NUM_HOLD_LEN;
+
+// Right now, all the menu entries are powers of 2
+float ARScale = pow(2,ARScaleIndex);
+float HoldScale = pow(2,HoldScaleIndex);
+
+float AttackLen  = Parameters[P_ATTACK_LEN] * ARScale;
+float HoldLen    = Parameters[P_HOLD_LEN]   * HoldScale;
+float ReleaseLen = Parameters[P_RELEASE_LEN]* ARScale;
 
 
 FXPosition = 0.0;
@@ -1384,7 +1396,7 @@ nvg_Finish(NvgContext);]]>
     <Array Name="AudioArray"/>
     <Array Name="Parameters" SizeDim1="28" Persistent="255">
       <Values>
-<![CDATA[789C636000037B0604B047C260306BE64C3B08BF018A1918F2859AAD81941D90B6B2E50A07CB2F9B7D042AC60CA41B40620C97F724DB9E3D73C60E661600D25A1167]]>
+<![CDATA[789C636000037B0604B047C260306BE64C3B08BF018A1918F2859AAD81941D90B6B2E50A07CB2F9B7D042AC60CA41B40620C97F724DB9E3D73C6CE67D92ABBD5ABB4EC01E3B314FF]]>
       </Values>
     </Array>
     <Array Name="SpecBandArray"/>
