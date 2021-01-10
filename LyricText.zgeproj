@@ -290,10 +290,12 @@ void hsv(float H, float S, float V, ref vec4 c)
     </ZLibrary>
     <ZLibrary Comment="Effect interface">
       <Source>
-<![CDATA[const string AuthorInfo = "Impostorem\nhttp://www.impostorem.com\nBased on Rado1's ZgeNano library and HUD Text";
+<![CDATA[const string AuthorInfo =
+ "Impostorem\n" +
+ "http://www.impostorem.com\n" +
+ "Based on Rado1's ZgeNano library and HUD Text";
 
 // PARAMETERS
-
 const string ParamHelpConst =
 "Alpha\n" +
 "Hue\n" +
@@ -322,7 +324,7 @@ const string ParamHelpConst =
 "First Note @list: C0,C1,C2,C3,C4,C5,C6,C7,C8,C9\n"
 ;
 
-
+// Parameter index values
 const int
   P_ALPHA = 0,
   P_HUE = 1,
@@ -351,6 +353,7 @@ const int
   P_MIDI_FIRST = 24,
   NUM_OF_PARAMS = 25;
 
+// Number of items in lists
 const int
   NUM_ATTACK_FX_TYPES = 7,
   NUM_HOLD_FX_TYPES = 3,
@@ -367,17 +370,15 @@ int[NUM_RELEASE_FX_TYPES] ReleaseFXTypes;
 int[NUM_BEAT_FX_TYPES]    BeatFXTypes;
 
 // Plugin / FLStudio
-xptr FLPluginHandle;
-int LayerNr;
-string FLPluginPath;
-string[0] UserTextArray;
-int FLShowEditor;
-float FLGraphicsScaleFactor;
+xptr FLPluginHandle;          // Plugin handle for ZGE calls
+int LayerNr;                  // Our current layer, 0 = 'A'
+string FLPluginPath;          // Path to the plugin, used to find fonts
+string[0] UserTextArray;      // Text in the "Add Content" tab
 
-float[NUM_OF_PARAMS] ParamOld;
-int[NUM_OF_PARAMS] ParamChanged;
+float[NUM_OF_PARAMS] ParamOld;   // Buffer of parameters to detect changes
+int[NUM_OF_PARAMS] ParamChanged; // Set to 1 if param changed since last
 
-vec4 Color;]]>
+vec4 Color; // Current RGBA color.]]>
       </Source>
     </ZLibrary>
     <ZLibrary Comment="Globals">
@@ -392,24 +393,25 @@ const int FALSE = 0;
 const int TRUE = 1;
 const float PI2 = PI * 2.0;
 
-// VARIABLES
-xptr NvgContext;
-string FontDir;
-float ViewportWidth, ViewportHeight, AspectRatio;
-float
-  PosX,
-  PosY,
-  Rotation,
-  PlaceValueMultiplier,
-  FontSize,
-  RowWidth,
-  LineHeight,
-  LetterSpacing;
 
-int
-  CurrentFont,
-  AlignHoriz,
-  AlignVert;
+xptr NvgContext;  // NanoVG drawing context
+string FontDir;   // Font directory
+
+// Window parameters
+float ViewportWidth,
+      ViewportHeight,
+      AspectRatio;
+
+float
+  PosX,                 // Text position X
+  PosY,                 //               Y
+  Rotation,             // Text rotation
+  FontSize,             // Font size
+  LineHeight,           // Text line height
+  LetterSpacing;        // Space between letters
+
+int CurrentFont;   // Current font index
+int FontId;
 
 // FX sequence
 const int
@@ -432,16 +434,18 @@ const int
   FX_TYPE_RISE = 7,
   FX_TYPE_WANDER = 8;
 
+// Beat waves - this affects how the current beat
+// is interpreted for beat fx.
 const int WAVE_SAW = 0,
           WAVE_SAW_1 = 1,
           WAVE_SIN = 2,
           WAVE_SIN_1 = 3;
 
-// Current and previous text line
+// Current text line
 // For reading the lyrics from the ZGEV data
-string Text;
 int CurTextLine;
 int TextChanged;
+string Text;
 
 
 int   FXType;     // FX_TYPE_NONE, FX_TYPE_FADE, etc.
@@ -457,22 +461,22 @@ float FXPosition; // Where are we in current sequence?
 float FXSequenceStart; // When did the transition occur?
 
 // MIDI Tracking if it triggered change
-int ActiveMIDINote;
-int ActiveMIDIChannel;
-int MIDITriggered;
+int ActiveMIDINote;     // Last triggered note
+int ActiveMIDIChannel;  // Channel that triggered it
+int MIDITriggered;      // Flag - 1 when the current text was from midi
 
 
 
 
 // FX-related variable. Each effect may use one or more of
 // these to change the text display
+float FadeAlpha;        // Alpha for effects - additional alpha multiplier
+float VerticalSlide;    // Slide in/out vertically
+float HorizontalSlide;  //           or horizontally
+float FontScale;        // multiplier for FontSize for effects
+float Blur;             // Blur size for NanoVG
+
 float FXStrength;
-float FadeAlpha;
-float VerticalSlide; // Fade in/out vertically
-float HorizontalSlide;
-float FontScale; // multiplier for FontSize for effects
-int   FontId;
-float Blur;
 
 // These two are kinda special, in that only HOLD effects
 // modify them and they should be left unchanged going from
@@ -783,6 +787,8 @@ float RiseEffect(int sequence, float position)
   return rise;
 }
 
+// Wander is cumulative rather than a position per frame,
+// so we do the entire effect here.
 void WanderEffect(int sequence, float position)
 {
   if (sequence == FX_HOLD)
@@ -971,15 +977,12 @@ if (NvgContext == null) {
 ViewportWidth = -1;]]>
       </Expression>
     </ZExpression>
-    <SetAppState State="MainAppState"/>
   </OnLoaded>
-  <States>
-    <AppState Name="MainAppState" CollisionsEnabled="0">
-      <OnUpdate>
-        <Condition Expression="return App.ViewportWidth != 0;">
-          <OnTrue>
-            <ZExpression Comment="Compute shape parameters">
-              <Expression>
+  <OnUpdate>
+    <Condition Expression="return App.ViewportWidth != 0;">
+      <OnTrue>
+        <ZExpression Comment="Compute shape parameters">
+          <Expression>
 <![CDATA[// Rado1's update code from HUD Text, with
 // various parts removed.
 
@@ -1057,15 +1060,13 @@ if (ParamChanged[P_LETTER_SPACING] || s)
 
 // Effects may play with these.
 Blur = 0;
-AlignHoriz = NVG_ALIGN_CENTER;
-AlignVert  = NVG_ALIGN_MIDDLE;
 
 float ascender, descender;
 nvg_TextMetrics(ascender,descender,LineHeight);]]>
-              </Expression>
-            </ZExpression>
-            <ZExpression Name="UpdateEffectsForText">
-              <Expression>
+          </Expression>
+        </ZExpression>
+        <ZExpression Name="UpdateEffectsForText">
+          <Expression>
 <![CDATA[// This file handles text/effects transitions and
 // setting up the effect parameters for drawing later
 // during OnRender().
@@ -1279,14 +1280,14 @@ switch (beatType)
     FontScale *= fontMul;
     break;
 }]]>
-              </Expression>
-            </ZExpression>
-          </OnTrue>
-        </Condition>
-      </OnUpdate>
-      <OnRender>
-        <ZExpression Name="DrawTheText">
-          <Expression>
+          </Expression>
+        </ZExpression>
+      </OnTrue>
+    </Condition>
+  </OnUpdate>
+  <OnRender>
+    <ZExpression Name="DrawTheText">
+      <Expression>
 <![CDATA[float[8] bounds;
 
 nvg_SetContext(NvgContext);
@@ -1298,7 +1299,7 @@ if (FXSequence != FX_NONE)
   nvg_BeginFrame();
 
   nvg_FontFaceId(FontId);
-  nvg_TextAlign(AlignHoriz | AlignVert);
+  nvg_TextAlign(NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
   nvg_FontSize(FontSize*FontScale);
   nvg_FillColor(Color.R, Color.G, Color.B, Color.A * FadeAlpha);
   nvg_FontBlur(Blur);
@@ -1315,11 +1316,9 @@ if (FXSequence != FX_NONE)
   nvg_ResetScissor();
   nvg_EndFrame();
 }]]>
-          </Expression>
-        </ZExpression>
-      </OnRender>
-    </AppState>
-  </States>
+      </Expression>
+    </ZExpression>
+  </OnRender>
   <OnClose>
     <ZExpression Name="FinishNanoVG">
       <Expression>
@@ -1329,19 +1328,19 @@ nvg_Finish(NvgContext);]]>
     </ZExpression>
   </OnClose>
   <Content>
+    <Array Name="AudioArray"/>
     <Array Name="Parameters" SizeDim1="28" Persistent="255">
       <Values>
 <![CDATA[789C636000037B0604B047C260306BE64C3B08BF012C962FD46C0DA4EC80B4952D5738586ED9EC2350316620DD001263783C21D9F6EC9933764866330000D4DF108C]]>
       </Values>
     </Array>
     <Array Name="SpecBandArray"/>
+    <Variable Name="bounds" Type="8"/>
+    <Variable Name="SongPositionInBeats"/>
     <Material Name="Material1">
       <Textures>
         <MaterialTexture Name="FLEditorMaterialTexture"/>
       </Textures>
     </Material>
-    <Array Name="AudioArray"/>
-    <Variable Name="SongPositionInBeats"/>
-    <Variable Name="bounds" Type="8"/>
   </Content>
 </ZApplication>
