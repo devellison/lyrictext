@@ -310,13 +310,12 @@ const string ParamHelpConst =
 "Letter spacing\n" +
 "Attack/Release @checkbox\n" +
 "Alpha A/R @checkbox\n" +
-"FX per @list: Line, Word\n" +
-"Attack FX @list1000: None,Fade,Blur,Expander, VertSlide,HorzSlide,FontScale,Typewriter\n" +
+"Attack FX @list1000: None,Fade,Blur,Expander, VertSlide,HorzSlide,FontScale,Typewriter, FadeWords\n" +
 "Attack Length\n" +
 "Hold FX @list1000: None, Rise, Wander\n" +
 "Hold Length\n" +
 "Hold Strength\n" +
-"Release FX @list1000: None,Fade,Blur,Expander,VertSlide,HorzSlide,FontScale,Typewriter\n" +
+"Release FX @list1000: None,Fade,Blur,Expander,VertSlide,HorzSlide,FontScale,Typewriter, FadeWords\n" +
 "Release Length\n" +
 "Beat FX @list1000: None,Fade,Blur,Expander,FontScale\n" +
 "Beat Strength\n" +
@@ -342,32 +341,31 @@ const int
   P_LETTER_SPACING = 10,
   P_ENABLE_FX = 11,
   P_ALPHA_AR = 12,
-  P_EFFECT_PER = 13,
-  P_ATTACK_FX = 14,
-  P_ATTACK_LEN = 15,
-  P_HOLD_FX = 16,
-  P_HOLD_LEN = 17,
-  P_HOLD_STRENGTH = 18,
-  P_RELEASE_FX = 19,
-  P_RELEASE_LEN = 20,
-  P_BEAT_FX = 21,
-  P_STRENGTH = 22,
-  P_WAVE = 23,
-  P_MIDI_CHANNEL = 24,
-  P_MIDI_FIRST = 25,
-  P_AR_LEN_SCALE = 26,
-  P_HOLD_LEN_SCALE = 27,
-  NUM_OF_PARAMS = 28;
+  P_ATTACK_FX = 13,
+  P_ATTACK_LEN = 14,
+  P_HOLD_FX = 15,
+  P_HOLD_LEN = 16,
+  P_HOLD_STRENGTH = 17,
+  P_RELEASE_FX = 18,
+  P_RELEASE_LEN = 19,
+  P_BEAT_FX = 20,
+  P_STRENGTH = 21,
+  P_WAVE = 22,
+  P_MIDI_CHANNEL = 23,
+  P_MIDI_FIRST = 24,
+  P_AR_LEN_SCALE = 25,
+  P_HOLD_LEN_SCALE = 26,
+  NUM_OF_PARAMS = 27;
 
 // Number of items in lists
 const int
-  NUM_ATTACK_FX_TYPES = 8,
+  NUM_ATTACK_FX_TYPES = 9,
   NUM_HOLD_FX_TYPES = 3,
-  NUM_RELEASE_FX_TYPES = 8,
+  NUM_RELEASE_FX_TYPES = 9,
   NUM_BEAT_FX_TYPES = 5,
   NUM_WAVE_TYPES = 4,
-  NUM_MIDI_CHANNELS=18,
-  NUM_FIRST_NOTES=10,
+  NUM_MIDI_CHANNELS = 18,
+  NUM_FIRST_NOTES = 10,
   NUM_AR_LEN = 6,
   NUM_HOLD_LEN = 6;
 
@@ -441,7 +439,8 @@ const int
   FX_TYPE_FONTSCALE = 6,
   FX_TYPE_RISE = 7,
   FX_TYPE_WANDER = 8,
-  FX_TYPE_TYPEWRITER = 9;
+  FX_TYPE_TYPEWRITER = 9,
+  FX_TYPE_FADEWORDS = 10;
 
 // Beat waves - this affects how the current beat
 // is interpreted for beat fx.
@@ -483,7 +482,7 @@ float FadeAlpha;        // Alpha for effects - additional alpha multiplier
 float VerticalSlide;    // Slide in/out vertically
 float HorizontalSlide;  //           or horizontally
 float FontScale;        // multiplier for FontSize for effects
-float Blur;             // Blur size for NanoVG
+float FXBlur;           // Blur size for NanoVG
 
 float FXStrength;
 float FXTyped;          // How much has been typed / remains
@@ -498,6 +497,10 @@ float HorzOffset;
 float FXWanderX;
 float FXWanderY;
 
+// Text split into words
+string[0] FXWords;
+int FXCurWord;
+float FXCurWordAlpha;
 
 // font TTF files
 string[0] FontFiles;
@@ -826,6 +829,70 @@ float TypewriterEffect(int sequence, float position)
       break;
   }
   return typed;
+}
+
+void SplitWords(string theText)
+{
+  int curStart = 0;
+  int numWords = 0;
+
+  FXWords.SizeDim1 = 0;
+  if (Length(theText) > 0)
+  {
+    for (int i = 0; i < Length(theText)-1; i++)
+    {
+      if (subStr(theText,i,1) == " ")
+      {
+        FXWords.SizeDim1 = numWords + 1;
+        FXWords[numWords] = subStr(theText,curStart,i-curStart + 1);
+        curStart = i + 1;
+        numWords++;
+      }
+    }
+
+    if (Length(theText) > curStart)
+    {
+      FXWords.SizeDim1 = numWords + 1;
+      FXWords[numWords] = subStr(theText,curStart, Length(theText) - curStart);
+    }
+  }
+
+}
+
+void FadeWordsEffect(int sequence, float position)
+{
+  if ((sequence != FX_ATTACK) && (sequence != FX_RELEASE))
+    return;
+  // Just go reverse on release
+  if (sequence == FX_RELEASE)
+  {
+    position = 1.0 - position;
+  }
+
+  float wordLen = 1.0 / FXWords.sizeDim1;
+  FXCurWord = position * FXWords.sizeDim1;
+
+  if (FXCurWord >= FXWords.sizeDim1)
+  {
+    FXCurWord = -1;
+    FXTyped = 1.0;
+  }
+  else
+  {
+    FXTyped = 0;
+    for (int i = 0; i < FXCurWord; ++i)
+    {
+      FXTyped += Length(FXWords[i]);
+    }
+    if (Length(Text) > 0)
+    {
+      FXTyped /= Length(Text);
+    }
+    else
+    {
+      FXTyped = 0;
+    }
+  }
 }]]>
       </Source>
     </ZLibrary>
@@ -976,6 +1043,7 @@ AttackFXTypes[4]  = FX_TYPE_VERTICAL;
 AttackFXTypes[5]  = FX_TYPE_HORZSLIDE;
 AttackFXTypes[6]  = FX_TYPE_FONTSCALE;
 AttackFXTypes[7]  = FX_TYPE_TYPEWRITER;
+AttackFXTypes[8]  = FX_TYPE_FADEWORDS;
 
 
 HoldFXTypes[0]  = FX_TYPE_NONE;
@@ -990,6 +1058,7 @@ ReleaseFXTypes[4] = FX_TYPE_VERTICAL;
 ReleaseFXTypes[5] = FX_TYPE_HORZSLIDE;
 ReleaseFXTypes[6] = FX_TYPE_FONTSCALE;
 ReleaseFXTypes[7] = FX_TYPE_TYPEWRITER;
+ReleaseFXTypes[8] = FX_TYPE_FADEWORDS;
 
 BeatFXTypes[0] = FX_TYPE_NONE;
 BeatFXTypes[1] = FX_TYPE_FADE;
@@ -1089,14 +1158,7 @@ if (ParamChanged[P_FONT_SIZE] || s) {
 
 // letter spacing
 if (ParamChanged[P_LETTER_SPACING] || s)
-  LetterSpacing = (Parameters[P_LETTER_SPACING] - 0.5) * FontSize * 2.0;
-
-// Effects may play with these.
-Blur = 0;
-
-// So far
-float ascender, descender;
-nvg_TextMetrics(ascender,descender,LineHeight);]]>
+  LetterSpacing = (Parameters[P_LETTER_SPACING] - 0.5) * FontSize * 2.0;]]>
           </Expression>
         </ZExpression>
         <ZExpression Name="UpdateEffectsForText">
@@ -1104,7 +1166,14 @@ nvg_TextMetrics(ascender,descender,LineHeight);]]>
 <![CDATA[// This file handles text/effects transitions and
 // setting up the effect parameters for drawing later
 // during OnRender().
+
+// Beat FX strength
 FXStrength = Parameters[P_STRENGTH];
+
+// So far, just using LineHeight
+float ascender, descender;
+nvg_TextMetrics(ascender,descender,LineHeight);
+
 
 // Update text and timer
 if (!MIDITriggered)
@@ -1155,6 +1224,9 @@ if (Length(Text) & 1)
 {
   Text += " ";
 }
+
+// Split words
+SplitWords(Text);
 
 // Scale attack/hold/release values to usable numbers of beats.
 float ARScaleIndex = Parameters[P_AR_LEN_SCALE] * NUM_AR_LEN;
@@ -1241,13 +1313,15 @@ if (FXSequence == FX_Release)
 
 // Setup the effect parameters here - start with defaults
 // Rendering is another step
-FadeAlpha = 1.0;
-Blur = 0;
-LetterSpacing = (Parameters[P_LETTER_SPACING] - 0.5) * FontSize * 2.0;
-VerticalSlide = 0;
-HorizontalSlide = 0;
-FontScale = 1.0;
-FXTyped = 1.0;
+FadeAlpha         = 1.0;
+FXBlur            = 0;
+LetterSpacing     = (Parameters[P_LETTER_SPACING] - 0.5) * FontSize * 2.0;
+VerticalSlide     = 0;
+HorizontalSlide   = 0;
+FontScale         = 1.0;
+FXTyped           = 1.0; // Amount that's been typed
+FXCurWord         = -1;
+FXCurWordAlpha    = 1.0;
 
 // Wondering if this should become velocity for MIDI notes?
 float HoldStrength = Parameters[P_HOLD_STRENGTH];
@@ -1269,7 +1343,7 @@ switch (FXType)
     FadeAlpha = FadeEffect(FXSequence, FXPosition);
     break;
   case FX_TYPE_BLUR:
-    Blur = BlurEffect(FXSequence, FXPosition)*20;
+    FXBlur = BlurEffect(FXSequence, FXPosition)*20;
     break;
   case FX_TYPE_EXPANDER:
     LetterSpacing = ExpanderEffect(FXSequence, FXPosition);
@@ -1291,6 +1365,9 @@ switch (FXType)
     break;
   case FX_TYPE_TYPEWRITER:
     FXTyped = TypewriterEffect(FXSequence,FXPosition);
+    break;
+  case FX_TYPE_FADEWORDS:
+    FadeWordsEffect(FXSequence,FXPosition);
     break;
  }
 
@@ -1317,7 +1394,7 @@ switch (beatType)
     FadeAlpha *= FadeEffect(FX_BEAT, beatMul());
     break;
   case FX_TYPE_BLUR:
-    Blur += BlurEffect(FX_BEAT, beatMul())*20;
+    FXBlur += BlurEffect(FX_BEAT, beatMul())*20;
     break;
   case FX_TYPE_EXPANDER:
     LetterSpacing += ExpanderEffect(FX_BEAT, beatMul());
@@ -1349,7 +1426,7 @@ if (FXSequence != FX_NONE)
   nvg_TextAlign(NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
   nvg_FontSize(FontSize*FontScale);
   nvg_FillColor(Color.R, Color.G, Color.B, Color.A * FadeAlpha);
-  nvg_FontBlur(Blur);
+  nvg_FontBlur(FXBlur);
 
   nvg_Translate(PosX+FXWanderX+HorzOffset, PosY+VertOffset+FXWanderY);
   nvg_Rotate(Rotation);
@@ -1357,28 +1434,58 @@ if (FXSequence != FX_NONE)
   nvg_TextBounds(0,0, Text, null, bounds);
 
   int typeOffset = 0;
+  string displayText = Text;
+
+  // Handle partial strings for Typewriter and FadeWords
+  // effects (and newer ones that use the same methodology)
   if (FXTyped != 1.0)
   {
     vec4 typeBounds;
-    string displayText = Text;
-    int lengthTyped = FXTyped * Length(Text);
+    int drawLength = FXTyped * Length(Text);
+    int nextWord = 0;
 
-    displayText = subStr(Text,0,lengthTyped);
+    // Include space - calc where the full string would be,
+    // then offset for left alignment and draw just the partial.
+    displayText = subStr(Text,0,drawLength);
+
     nvg_TextAlign(NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
     nvg_TextBounds(0,0,displayText,null,typeBounds);
     typeOffset = typeBounds[0] - bounds[0];
 
+    // Draw "Typed" portion
     nvg_Scissor(bounds[0],bounds[1],typeBounds[2] - typeBounds[0],bounds[3] - bounds[1]);
+    nvg_Text(bounds[2]*HorizontalSlide*2 - typeOffset,
+             bounds[3]*VerticalSlide, displayText, null);
+    nvg_ResetScissor();
+
+    nextWord = bounds[2]*HorizontalSlide*2 - typeOffset;
+    nextWord += typeBounds[2] - typeBounds[0];
+
+    // Got a word to fade in
+    if (FXCurWord >= 0)
+    {
+      // Kerning eats me alive here.  Space isn't quite taken into account
+      // in Textbounds, but moving space into here makes it different.
+      // Also, blur and similar effects change the text bounds.
+      //
+      // I think the only way to fade in individual words will be to rework
+      // it to where we calculate each word every time and draw words individually,
+      // so kerning changes and bounds estimations don't make words shift after
+      // they join the main string.
+    }
+
   }
   else
   {
+    // Draw entire string.
     nvg_Scissor(bounds[0],bounds[1],bounds[2] - bounds[0],bounds[3] - bounds[1]);
+    nvg_Text(bounds[2]*HorizontalSlide*2 - typeOffset,
+             bounds[3]*VerticalSlide, displayText, null);
+
+    nvg_ResetScissor();
   }
 
-  nvg_Text(bounds[2]*HorizontalSlide*2 - typeOffset,
-           bounds[3]*VerticalSlide, Text, null);
 
-  nvg_ResetScissor();
   nvg_EndFrame();
 }]]>
       </Expression>
@@ -1396,7 +1503,7 @@ nvg_Finish(NvgContext);]]>
     <Array Name="AudioArray"/>
     <Array Name="Parameters" SizeDim1="28" Persistent="255">
       <Values>
-<![CDATA[789C636000037B0604B047C260306BE64C3B08BF018A1918F2859AAD81941D90B6B2E50A07CB2F9B7D042AC60CA41B40620C97F724DB9E3D73C6CE67D92ABBD5ABB4EC01E3B314FF]]>
+<![CDATA[789C636000037B0604B047C260306BE64C3B08BF018CF3859AAD817C3B206D65CB150E965B36FB08548C19483780C4182EEF49B63D7BE68C9DCFB25576B7D66881CD030026341530]]>
       </Values>
     </Array>
     <Array Name="SpecBandArray"/>
