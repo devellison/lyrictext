@@ -1,4 +1,4 @@
-# LyricText
+# LyricText v0.9
 LyricText is an effect for the [FL Studio](http://image-line.com) / [ZGameEditor](https://github.com/VilleKrumlinde/zgameeditor " ZGameEditor") Visualizer plugin to
 simplify displaying lyrics in videos.
 
@@ -50,6 +50,7 @@ FadeWords   | Attack/Release        | Text appears one word at a time* - Work in
   
 
 ## <a name="Setup"/>Setup
+
 1. Download `LyricText.zgeobject` and place it in the `Effects/Text` directory for ZGameEditor Visualizer in FL Studio.
     - On Windows, that will usually be `C:\Program Files (x86)\Image-Line\FL Studio\Plugins\Fruity\Effects\ZGameEditor Visualizer\Effects\Text`.
     See more information in the  [FL Studio manual.](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/ZGameEditor%20Visualizer.htm#ZGE_addfx "FL Studio manual.")

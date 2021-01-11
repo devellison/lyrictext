@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 <ZApplication Name="App" Caption="HUD Line" ClearColor="0 0 0 1" AmbientLightColor="0.7529 0.7529 0.7529 1" ScreenMode="0" CameraPosition="0 0 30" LightPosition="200 200 200" ViewportRatio="2" FOV="70" ClipFar="1000" MouseVisible="255" UseStencilBuffer="255" FileVersion="2">
   <Comment>
-<![CDATA[Lyric Text
+<![CDATA[LyricText v0.9
 
-This is heavily based off Rado1's HUD Text and uses his ZgeNanoVG
- library.  It is intended to greatly simplify scripting text animations for 
-lyric-style videos.
+LyricText is based off Rado1's HUD Text and uses his ZgeNanoVG library.
 
-You'll need to automate the "Text line" control to pick lyrics from the
-"Add content->Text" page in ZGE Visualizer.
+To display lyrics, first fill the "Add content->Text" tab with your lyrics.  
+Then you can select the line either by sending MIDI notes to the visualizer, or by automating the "Text Line" parameter.
 
-When the text changes, it starts an Attack, which lasts for the
-specified length (the slider is a multiplier on beats).
+It uses an Attack/Hold/Release model, and each state can have its own effect and time.
 
-After the attack effect, it goes to hold, then to release.
+If automating with MIDI, an attack starts when a note is received and lasts for the time specified by the
+"Attack Length" parameter.  It will remain in a "Hold" state until the note is release, then transitions to "Release" and
+finally ends.  
 
-On top of the A/H/R effects, the Beat FX will be applied if one
-is selected.]]>
+More information and code available at:
+https://github.com/devellison/lyrictext]]>
   </Comment>
   <OnLoaded>
     <ZExternalLibrary Comment="Vector graphics library" ModuleName="ZgeNano" CallingConvention="1">
