@@ -35,7 +35,7 @@ On top of the Attack/Hold/Release effects, the Beat FX will be applied if one is
 These are the effects that have been implemented so far...
 
 Effect Name | Phases Supported      |Description
-------------|--------------------------------
+----------- | --------------------- | --------
 None        | All                   | Does nothing but display text
 Fade        | Attack/Release/Beat   | Alpha fades the text (fades in / fades out / fades to the beat)
 Blur        | Attack/Release/Beat   | Blurs the text (focuses / blurs / blurs to the beat)
