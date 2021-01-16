@@ -955,7 +955,6 @@ void OnNoteOff(int channel, int note)
 void OnMidiMessage(int status, int data1, int data2)
 {
   int midOpt = Parameters[P_MIDI_CHANNEL]*NUM_MIDI_CHANNELS;
-  trace("midOpt: " + intToStr(midOpt));
   // Skip if MIDI isn't enabled
   if (midOpt == 0)
   {
@@ -1264,7 +1263,7 @@ if (FXSequence == FX_Attack)
   }
   else
   {
-    int index = Parameters[P_ATTACK_FX] * 1000;
+    int index = round(Parameters[P_ATTACK_FX] * 1000);
     FXType = AttackFXTypes[index];
     FXPosition = curSeqLen / AttackLen;
   }
@@ -1285,7 +1284,7 @@ if (FXSequence == FX_Hold)
   }
   else
   {
-    int index = Parameters[P_HOLD_FX] * 1000;
+    int index = round(Parameters[P_HOLD_FX] * 1000);
     FXType = HoldFXTypes[index];
     FXPosition = curSeqLen / HoldLen;
   }
@@ -1304,7 +1303,7 @@ if (FXSequence == FX_Release)
   }
   else
   {
-    int index = Parameters[P_RELEASE_FX] * 1000;
+    int index = round(Parameters[P_RELEASE_FX] * 1000);
     FXType = ReleaseFXTypes[index];
     FXPosition = curSeqLen / ReleaseLen;
   }
@@ -1383,7 +1382,7 @@ if (Parameters[P_ALPHA_AR] > 0.5)
 }
 
 // Add in beat FX on top of attack/hold/release fx.
-int beatType = BeatFXTypes[Parameters[P_BEAT_FX]*1000];
+int beatType = BeatFXTypes[round(Parameters[P_BEAT_FX]*1000)];
 float fontMul = 1.0;
 switch (beatType)
 {
