@@ -617,7 +617,7 @@ float beatPos()
 // wave form.
 float beatMul()
 {
-  int   wave = Parameters[P_WAVE] * NUM_WAVE_TYPES;
+  int   wave = round(Parameters[P_WAVE] * NUM_WAVE_TYPES);
   float waveVal = 1.0;
 
   switch  (wave)
@@ -900,7 +900,7 @@ void FadeWordsEffect(int sequence, float position)
 <![CDATA[void OnNoteOn(int channel, int note, int velo)
 {
    // First note is the one at 0.  We ignore anything below.
-   int firstNote = PARAMETERS[P_MIDI_FIRST] * NUM_FIRST_NOTES;
+   int firstNote = round(PARAMETERS[P_MIDI_FIRST] * NUM_FIRST_NOTES);
    firstNote *= 12;
 
    if (note < firstNote)
@@ -954,7 +954,7 @@ void OnNoteOff(int channel, int note)
 
 void OnMidiMessage(int status, int data1, int data2)
 {
-  int midOpt = Parameters[P_MIDI_CHANNEL]*NUM_MIDI_CHANNELS;
+  int midOpt = round(Parameters[P_MIDI_CHANNEL]*NUM_MIDI_CHANNELS);
   // Skip if MIDI isn't enabled
   if (midOpt == 0)
   {
