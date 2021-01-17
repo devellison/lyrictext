@@ -309,12 +309,12 @@ const string ParamHelpConst =
 "Letter spacing\n" +
 "Attack/Release @checkbox\n" +
 "Alpha A/R @checkbox\n" +
-"Attack FX @list1000: None,Fade,Blur,Expander, VertSlide,HorzSlide,FontScale,Typewriter, FadeWords\n" +
+"Attack FX @list1000: None,Fade,Blur,Expander,SlideUp,SlideRight,FontScale,Typewriter,FadeWords,SlideDown,SlideLeft\n" +
 "Attack Length\n" +
 "Hold FX @list1000: None, Rise, Wander\n" +
 "Hold Length\n" +
 "Hold Strength\n" +
-"Release FX @list1000: None,Fade,Blur,Expander,VertSlide,HorzSlide,FontScale,Typewriter, FadeWords\n" +
+"Release FX @list1000: None,Fade,Blur,Expander,SlideUp,SlideRight,FontScale,Typewriter,FadeWords,SlideDown,SlideLeft\n" +
 "Release Length\n" +
 "Beat FX @list1000: None,Fade,Blur,Expander,FontScale\n" +
 "Beat Strength\n" +
@@ -358,9 +358,9 @@ const int
 
 // Number of items in lists
 const int
-  NUM_ATTACK_FX_TYPES = 9,
+  NUM_ATTACK_FX_TYPES = 11,
   NUM_HOLD_FX_TYPES = 3,
-  NUM_RELEASE_FX_TYPES = 9,
+  NUM_RELEASE_FX_TYPES = 11,
   NUM_BEAT_FX_TYPES = 5,
   NUM_WAVE_TYPES = 4,
   NUM_MIDI_CHANNELS = 18,
@@ -439,7 +439,9 @@ const int
   FX_TYPE_RISE = 7,
   FX_TYPE_WANDER = 8,
   FX_TYPE_TYPEWRITER = 9,
-  FX_TYPE_FADEWORDS = 10;
+  FX_TYPE_FADEWORDS = 10,
+  FX_TYPE_SLIDEDOWN = 11,
+  FX_TYPE_SLIDELEFT = 12;
 
 // Beat waves - this affects how the current beat
 // is interpreted for beat fx.
@@ -1042,6 +1044,8 @@ AttackFXTypes[5]  = FX_TYPE_HORZSLIDE;
 AttackFXTypes[6]  = FX_TYPE_FONTSCALE;
 AttackFXTypes[7]  = FX_TYPE_TYPEWRITER;
 AttackFXTypes[8]  = FX_TYPE_FADEWORDS;
+AttackFXTypes[9]   = FX_TYPE_SLIDEDOWN;
+AttackFXTypes[10]  = FX_TYPE_SLIDELEFT;
 
 
 HoldFXTypes[0]  = FX_TYPE_NONE;
@@ -1057,6 +1061,8 @@ ReleaseFXTypes[5] = FX_TYPE_HORZSLIDE;
 ReleaseFXTypes[6] = FX_TYPE_FONTSCALE;
 ReleaseFXTypes[7] = FX_TYPE_TYPEWRITER;
 ReleaseFXTypes[8] = FX_TYPE_FADEWORDS;
+ReleaseFXTypes[9] = FX_TYPE_SLIDEDOWN;
+ReleaseFXTypes[10] = FX_TYPE_SLIDELEFT;
 
 BeatFXTypes[0] = FX_TYPE_NONE;
 BeatFXTypes[1] = FX_TYPE_FADE;
@@ -1263,7 +1269,7 @@ if (FXSequence == FX_Attack)
   }
   else
   {
-    int index = round(Parameters[P_ATTACK_FX] * 1000);
+    int index = round(clamp(Parameters[P_ATTACK_FX] * 1000,0,NUM_ATTACK_FX_TYPES-1));
     FXType = AttackFXTypes[index];
     FXPosition = curSeqLen / AttackLen;
   }
@@ -1284,7 +1290,7 @@ if (FXSequence == FX_Hold)
   }
   else
   {
-    int index = round(Parameters[P_HOLD_FX] * 1000);
+    int index = round(clamp(Parameters[P_HOLD_FX] * 1000,0,NUM_HOLD_FX_TYPES-1));
     FXType = HoldFXTypes[index];
     FXPosition = curSeqLen / HoldLen;
   }
@@ -1303,7 +1309,7 @@ if (FXSequence == FX_Release)
   }
   else
   {
-    int index = round(Parameters[P_RELEASE_FX] * 1000);
+    int index = round(clamp(Parameters[P_RELEASE_FX] * 1000,0,NUM_RELEASE_FX_TYPES-1));
     FXType = ReleaseFXTypes[index];
     FXPosition = curSeqLen / ReleaseLen;
   }
@@ -1352,6 +1358,12 @@ switch (FXType)
   case FX_TYPE_HORZSLIDE:
     HorizontalSlide = HorzSlideEffect(FXSequence, FXPosition);
     break;
+  case FX_TYPE_SLIDEDOWN:
+    VerticalSlide = -VerticalEffect(FXSequence, FXPosition);
+    break;
+  case FX_TYPE_SLIDELEFT:
+    HorizontalSlide = -HorzSlideEffect(FXSequence, FXPosition);
+    break;
   case FX_TYPE_FONTSCALE:
     FontScale = FontScaleEffect(FXSequence,FXPosition);
     break;
@@ -1382,7 +1394,7 @@ if (Parameters[P_ALPHA_AR] > 0.5)
 }
 
 // Add in beat FX on top of attack/hold/release fx.
-int beatType = BeatFXTypes[round(Parameters[P_BEAT_FX]*1000)];
+int beatType = BeatFXTypes[round(clamp(Parameters[P_BEAT_FX]*1000,0,NUM_BEAT_FX_TYPES-1))];
 float fontMul = 1.0;
 switch (beatType)
 {
@@ -1453,7 +1465,7 @@ if (FXSequence != FX_NONE)
     // Draw "Typed" portion
     nvg_Scissor(bounds[0],bounds[1],typeBounds[2] - typeBounds[0],bounds[3] - bounds[1]);
     nvg_Text(bounds[2]*HorizontalSlide*2 - typeOffset,
-             bounds[3]*VerticalSlide, displayText, null);
+             bounds[3]*VerticalSlide*2, displayText, null);
     nvg_ResetScissor();
 
     nextWord = bounds[2]*HorizontalSlide*2 - typeOffset;
@@ -1478,7 +1490,7 @@ if (FXSequence != FX_NONE)
     // Draw entire string.
     nvg_Scissor(bounds[0],bounds[1],bounds[2] - bounds[0],bounds[3] - bounds[1]);
     nvg_Text(bounds[2]*HorizontalSlide*2 - typeOffset,
-             bounds[3]*VerticalSlide, displayText, null);
+             bounds[3]*VerticalSlide*2, displayText, null);
 
     nvg_ResetScissor();
   }
