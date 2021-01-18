@@ -860,6 +860,23 @@ void SplitWords(string theText)
 
 }
 
+int LengthToWord(int wordIndex)
+{
+
+  int lengthTo = 0;
+
+  if (FXCurWord > FXWords.sizeDim1)
+  {
+    return Length(Text);
+  }
+
+  for (int i = 0; i < wordIndex; ++i)
+  {
+    lengthTo += Length(FXWords[i]);
+  }
+  return lengthTo;
+}
+
 void FadeWordsEffect(int sequence, float position)
 {
   if ((sequence != FX_ATTACK) && (sequence != FX_RELEASE))
@@ -870,10 +887,10 @@ void FadeWordsEffect(int sequence, float position)
     position = 1.0 - position;
   }
 
-  float wordLen = 1.0 / FXWords.sizeDim1;
-  FXCurWord = position * FXWords.sizeDim1;
+  FXCurWord = floor(position * FXWords.sizeDim1);
+  FXCurWordAlpha = 1.0 - ((FXCurWord + 1) - (position*FXWords.sizeDim1)) ;
 
-  if (FXCurWord >= FXWords.sizeDim1)
+  if (FXCurWord > FXWords.sizeDim1)
   {
     FXCurWord = -1;
     FXTyped = 1.0;
@@ -881,10 +898,7 @@ void FadeWordsEffect(int sequence, float position)
   else
   {
     FXTyped = 0;
-    for (int i = 0; i < FXCurWord; ++i)
-    {
-      FXTyped += Length(FXWords[i]);
-    }
+    FXTyped = lengthToWord(FXCurWord);
     if (Length(Text) > 0)
     {
       FXTyped /= Length(Text);
@@ -894,6 +908,29 @@ void FadeWordsEffect(int sequence, float position)
       FXTyped = 0;
     }
   }
+}
+
+// Draws a partial string given the text at the full string's location.
+void DrawNvgSubstring(string theText, int subLen)
+{
+  // Get where the full string would beatMul centered.
+  vec4 bounds;
+  nvg_TextAlign(NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+  nvg_TextBounds(0,0, Text, null, bounds);
+
+  // Get our size and find offset to put it in the same place aligned left
+  string displayText = subStr(theText,0,subLen);
+  nvg_TextAlign(NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+
+  vec4 typeBounds;
+  nvg_TextBounds(0,0,displayText,null,typeBounds);
+  float typeOffset = typeBounds[0] - bounds[0];
+
+  // Create scissor and draw with active slides
+  nvg_Scissor(bounds[0],bounds[1],typeBounds[2] - typeBounds[0],bounds[3] - bounds[1]);
+  nvg_Text(bounds[2]*HorizontalSlide*2 - typeOffset,
+           bounds[3]*VerticalSlide*2, displayText, null);
+  nvg_ResetScissor();
 }]]>
       </Source>
     </ZLibrary>
@@ -1422,9 +1459,7 @@ switch (beatType)
   <OnRender>
     <ZExpression Name="DrawTheText">
       <Expression>
-<![CDATA[float[8] bounds;
-
-nvg_SetContext(NvgContext);
+<![CDATA[nvg_SetContext(NvgContext);
 
 //Text
 
@@ -1441,6 +1476,8 @@ if (FXSequence != FX_NONE)
   nvg_Translate(PosX+FXWanderX+HorzOffset, PosY+VertOffset+FXWanderY);
   nvg_Rotate(Rotation);
   nvg_TextLetterSpacing(LetterSpacing);
+
+  vec4 bounds;
   nvg_TextBounds(0,0, Text, null, bounds);
 
   int typeOffset = 0;
@@ -1448,42 +1485,19 @@ if (FXSequence != FX_NONE)
 
   // Handle partial strings for Typewriter and FadeWords
   // effects (and newer ones that use the same methodology)
-  if (FXTyped != 1.0)
+  if ((FXTyped != 1.0) && Length(Text) > 0)
   {
-    vec4 typeBounds;
-    int drawLength = FXTyped * Length(Text);
-    int nextWord = 0;
-
-    // Include space - calc where the full string would be,
-    // then offset for left alignment and draw just the partial.
-    displayText = subStr(Text,0,drawLength);
-
-    nvg_TextAlign(NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
-    nvg_TextBounds(0,0,displayText,null,typeBounds);
-    typeOffset = typeBounds[0] - bounds[0];
-
-    // Draw "Typed" portion
-    nvg_Scissor(bounds[0],bounds[1],typeBounds[2] - typeBounds[0],bounds[3] - bounds[1]);
-    nvg_Text(bounds[2]*HorizontalSlide*2 - typeOffset,
-             bounds[3]*VerticalSlide*2, displayText, null);
-    nvg_ResetScissor();
-
-    nextWord = bounds[2]*HorizontalSlide*2 - typeOffset;
-    nextWord += typeBounds[2] - typeBounds[0];
-
-    // Got a word to fade in
+    // Draw current word when fading words
     if (FXCurWord >= 0)
     {
-      // Kerning eats me alive here.  Space isn't quite taken into account
-      // in Textbounds, but moving space into here makes it different.
-      // Also, blur and similar effects change the text bounds.
-      //
-      // I think the only way to fade in individual words will be to rework
-      // it to where we calculate each word every time and draw words individually,
-      // so kerning changes and bounds estimations don't make words shift after
-      // they join the main string.
+      nvg_FillColor(Color.R, Color.G, Color.B, FXCurWordAlpha * Color.A * FadeAlpha);
+      DrawNvgSubstring(Text,lengthToWord(FXCurWord+1));
     }
 
+    // Draw the "typed" portion, or everything up to current word/letter.
+    nvg_FillColor(Color.R, Color.G, Color.B, Color.A * FadeAlpha);
+    int drawLength = FXTyped * Length(Text);
+    DrawNvgSubstring(Text,drawLength);
   }
   else
   {
