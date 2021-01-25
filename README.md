@@ -1,4 +1,4 @@
-# LyricText v0.9
+# LyricText v1.0
 LyricText is an effect for the [FL Studio](http://image-line.com) / [ZGameEditor](https://github.com/VilleKrumlinde/zgameeditor " ZGameEditor") Visualizer plugin to
 simplify displaying lyrics in videos.
 
