@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 <ZApplication Name="App" Caption="HUD Line" ClearColor="0 0 0 1" AmbientLightColor="0.7529 0.7529 0.7529 1" ScreenMode="0" CameraPosition="0 0 30" LightPosition="200 200 200" ViewportRatio="2" FOV="70" ClipFar="1000" MouseVisible="255" UseStencilBuffer="255" FileVersion="2">
   <Comment>
-<![CDATA[LyricText v0.9
+<![CDATA[LyricText v1.0
+
 
 LyricText is based off Rado1's HUD Text and uses his ZgeNanoVG library.
 
+
 To display lyrics, first fill the "Add content->Text" tab with your lyrics.  
-Then you can select the line either by sending MIDI notes to the visualizer, or by automating the "Text Line" parameter.
+
+Then you can select the line either by sending MIDI notes to the visualizer, 
+or by automating the "Text Line" parameter.
+
 
 It uses an Attack/Hold/Release model, and each state can have its own effect and time.
 
-If automating with MIDI, an attack starts when a note is received and lasts for the time specified by the
-"Attack Length" parameter.  It will remain in a "Hold" state until the note is release, then transitions to "Release" and
+
+If automating with MIDI, an attack starts when a note is received and lasts for the time 
+specified by the
+"Attack Length" parameter.  
+It will remain in a "Hold" state until the note is release, then transitions to "Release" and 
 finally ends.  
+
 
 More information and code available at:
 https://github.com/devellison/lyrictext]]>

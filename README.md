@@ -40,8 +40,10 @@ None        | All                   | Does nothing but display text
 Fade        | Attack/Release/Beat   | Alpha fades the text (fades in / fades out / fades to the beat)
 Blur        | Attack/Release/Beat   | Blurs the text (focuses / blurs / blurs to the beat)
 Expander    | Attack/Release/Beat   | Expands the letter spacing ( contracts in / expands out / expands to the beat)
-Vertical    | Attack/Release        | Slides Vertically  clipping the text (Slides up in / Slides down out )
-HorzSlide   | Attack/Release        | Slides Horizontally clipping the text (Slides in from right / Slides out to right)
+SlideUp    | Attack/Release        | Slides Vertically  clipping the text (Slides up in / Slides down out )
+SlideDown    | Attack/Release        | Slides Vertically  clipping the text (Slides down in / Slides up out )
+SlideLeft   | Attack/Release        | Slides Horizontally clipping the text (Slides in from left / Slides out to left)
+SlideRight   | Attack/Release        | Slides Horizontally clipping the text (Slides in from right / Slides out to right)
 FontScale   | Attack/Release/Beat   | Zooms the font size (expands in / shrinks out / sizes to beat)
 Rise        | Hold                  | Text slowly rises
 Wander      | Hold                  | Text wanders around
@@ -53,6 +55,7 @@ FadeWords   | Attack/Release        | Text appears one word at a time* - Work in
 
 1. Download `LyricText.zgeobject` and place it in the `Effects/Text` directory for ZGameEditor Visualizer in FL Studio.
     - On Windows, that will usually be `C:\Program Files (x86)\Image-Line\FL Studio\Plugins\Fruity\Effects\ZGameEditor Visualizer\Effects\Text`.
+    - On Mac, it will usually be `/Applications/FL\ Studio\ 20.app/Contents/Resources/FL/Plugins/Fruity/Effects/ZGameEditor\ Visualizer/Effects/Text`.
     See more information in the  [FL Studio manual.](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/ZGameEditor%20Visualizer.htm#ZGE_addfx "FL Studio manual.")
 
 1. Add the ZGameEditor Visualizer to a mixer track (I generally put it on the Master track before any limiters)
