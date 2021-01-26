@@ -320,12 +320,12 @@ const string ParamHelpConst =
 "Alpha A/R @checkbox\n" +
 "Attack FX @list1000: None,Fade,Blur,Expander,SlideUp,SlideRight,FontScale,Typewriter,FadeWords,SlideDown,SlideLeft\n" +
 "Attack Length\n" +
-"Hold FX @list1000: None, Rise, Wander\n" +
+"Hold FX @list1000: None, Rise, Wander,Bounce\n" +
 "Hold Length\n" +
 "Hold Strength\n" +
 "Release FX @list1000: None,Fade,Blur,Expander,SlideUp,SlideRight,FontScale,Typewriter,FadeWords,SlideDown,SlideLeft\n" +
 "Release Length\n" +
-"Beat FX @list1000: None,Fade,Blur,Expander,FontScale\n" +
+"Beat FX @list1000: None,Fade,Blur,Expander,FontScale,Bounce\n" +
 "Beat Strength\n" +
 "Beat Wave @list: Saw,1-Saw, Sin, 1-Sin\n" +
 "MIDI Chan @list: None,Any,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16\n" +
@@ -368,9 +368,9 @@ const int
 // Number of items in lists
 const int
   NUM_ATTACK_FX_TYPES = 11,
-  NUM_HOLD_FX_TYPES = 3,
+  NUM_HOLD_FX_TYPES = 4,
   NUM_RELEASE_FX_TYPES = 11,
-  NUM_BEAT_FX_TYPES = 5,
+  NUM_BEAT_FX_TYPES = 6,
   NUM_WAVE_TYPES = 4,
   NUM_MIDI_CHANNELS = 18,
   NUM_FIRST_NOTES = 10,
@@ -450,7 +450,8 @@ const int
   FX_TYPE_TYPEWRITER = 9,
   FX_TYPE_FADEWORDS = 10,
   FX_TYPE_SLIDEDOWN = 11,
-  FX_TYPE_SLIDELEFT = 12;
+  FX_TYPE_SLIDELEFT = 12,
+  FX_TYPE_BOUNCE = 13;
 
 // Beat waves - this affects how the current beat
 // is interpreted for beat fx.
@@ -821,6 +822,25 @@ void WanderEffect(int sequence, float position)
   }
 }
 
+// Sin does ok, but would be better with accel/decel
+// Right now ignores beat's waveform... need to think through
+// how to make that useful and look good.
+float BounceEffect(int sequence, float position)
+{
+  float yOffset = 0.0;
+  switch (sequence)
+  {
+    case FX_BEAT:
+      yOffset = -abs(sin(position*PI));
+      break;
+    case FX_HOLD:
+      yOffset = -abs(sin(position*PI*2));
+      break;
+  }
+
+  return yOffset;
+}
+
 float TypewriterEffect(int sequence, float position)
 {
   float typed = 1.0;
@@ -1097,6 +1117,7 @@ AttackFXTypes[10]  = FX_TYPE_SLIDELEFT;
 HoldFXTypes[0]  = FX_TYPE_NONE;
 HoldFXTypes[1]  = FX_TYPE_RISE;
 HoldFXTypes[2]  = FX_TYPE_WANDER;
+HoldFXTypes[3]  = FX_TYPE_BOUNCE;
 
 ReleaseFXTypes[0] = FX_TYPE_NONE;
 ReleaseFXTypes[1] = FX_TYPE_FADE;
@@ -1114,7 +1135,8 @@ BeatFXTypes[0] = FX_TYPE_NONE;
 BeatFXTypes[1] = FX_TYPE_FADE;
 BeatFXTypes[2] = FX_TYPE_BLUR;
 BeatFXTypes[3] = FX_TYPE_EXPANDER;
-BeatFXTypes[4] = FX_TYPE_FONTSCALE;]]>
+BeatFXTypes[4] = FX_TYPE_FONTSCALE;
+BeatFXTypes[5] = FX_TYPE_BOUNCE;]]>
       </Expression>
     </ZExpression>
     <ZExpression Name="InitNanoVG">
@@ -1425,6 +1447,9 @@ switch (FXType)
   case FX_TYPE_FADEWORDS:
     FadeWordsEffect(FXSequence,FXPosition);
     break;
+  case FX_TYPE_BOUNCE:
+    VertOffset = BounceEffect(FXSequence,FXPosition)*HoldStrength*50;
+    break;
  }
 
 // If fade transitions...
@@ -1458,6 +1483,9 @@ switch (beatType)
   case FX_TYPE_FONTSCALE:
     fontMul = FontScaleEffect(FX_BEAT,beatMul());
     FontScale *= fontMul;
+    break;
+  case FX_TYPE_BOUNCE:
+    VertOffset += BounceEffect(FX_BEAT,beatPos())*FXStrength*50;
     break;
 }]]>
           </Expression>
