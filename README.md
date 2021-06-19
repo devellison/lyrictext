@@ -12,6 +12,8 @@ simplify displaying lyrics in videos.
 ## Overview
 LyricText is based off Rado1's HUD Text and uses his [ZgeNanoVG](https://github.com/Rado-1/ZgeNano) library. 
 
+Tutorial / demo: https://youtu.be/K-LCFcOo5qo
+
 To display lyrics, first fill the "Add content->Text" tab with your lyrics.  
 Then you can select the line either by sending MIDI notes to the visualizer, or by automating the "Text Line" parameter.
 
