@@ -1,4 +1,4 @@
-# LyricText v1.1
+# LyricText v1.1.1
 LyricText is an effect for the [FL Studio](http://image-line.com) / [ZGameEditor](https://github.com/VilleKrumlinde/zgameeditor " ZGameEditor") Visualizer plugin to
 simplify displaying lyrics in videos.
 
@@ -12,7 +12,7 @@ simplify displaying lyrics in videos.
 ## Overview
 LyricText is based off Rado1's HUD Text and uses his [ZgeNanoVG](https://github.com/Rado-1/ZgeNano) library. 
 
-Tutorial / demo: https://youtu.be/K-LCFcOo5qo
+[LyricText Instructions and Demo on YouTube](https://www.youtube.com/watch?v=K-LCFcOo5qo)
 
 To display lyrics, first fill the "Add content->Text" tab with your lyrics.  
 Then you can select the line either by sending MIDI notes to the visualizer, or by automating the "Text Line" parameter.
@@ -49,16 +49,26 @@ SlideRight   | Attack/Release        | Slides Horizontally clipping the text (Sl
 FontScale   | Attack/Release/Beat   | Zooms the font size (expands in / shrinks out / sizes to beat)
 Rise        | Hold                  | Text slowly rises
 Wander      | Hold                  | Text wanders around
+Bounce      | Hold/Beat             | Text bounces
 Typewriter  | Attack/Release        | Text appears/disappears one character at a time
 FadeWords   | Attack/Release        | Text appears one word at a time* - Work in progress
   
 
 ## <a name="Setup"/>Setup
 
+### Install with Impostorem Tools
+As of version 1.1.1, LyricText is included in the [Impostorem Tools](https://github.com/devellison/impostorem_tools) installer.
+If you are using it Windows 10 64-bit with FLStudio 20, you can just use the [Impostorem Tools Installer](https://github.com/devellison/impostorem_tools/releases).
+
+
+### Manual Install
 1. Download `LyricText.zgeobject` and place it in the `Effects/Text` directory for ZGameEditor Visualizer in FL Studio.
     - On Windows, that will usually be `C:\Program Files (x86)\Image-Line\FL Studio\Plugins\Fruity\Effects\ZGameEditor Visualizer\Effects\Text`.
     - On Mac, it will usually be `/Applications/FL\ Studio\ 20.app/Contents/Resources/FL/Plugins/Fruity/Effects/ZGameEditor\ Visualizer/Effects/Text`.
     See more information in the  [FL Studio manual.](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/ZGameEditor%20Visualizer.htm#ZGE_addfx "FL Studio manual.")
+
+NOTE: While most effects can be installed under FL Studio's user data folder, this one cannot because it won't find ZgeNanoVG.  This is something to look into
+fixing in the future.  Until then, it MUST be installed in the same effects tree as the HUD Text effects.
 
 1. Add the ZGameEditor Visualizer to a mixer track (I generally put it on the Master track before any limiters)
 
@@ -119,4 +129,6 @@ Hold Len Scale  | Scales the length of the Hold effect by the specified number o
 
 
 ### <a name="Samples"/>Samples:
-Currently the main sample is in the LyricText_Test.flp project included in the repository._
+- [LyricText Instructions and Demo](https://www.youtube.com/watch?v=K-LCFcOo5qo)
+- [Euterpe 1](https://youtu.be/WEeOEKrbE9A) (Latest LyricText & Pianoshooter video using 1.1 with plugins from [Impostorem Tools](https://github.com/devellison/impostorem_tools) )
+- LyricText_Test.flp project for FLStudio 20 included in this repository.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 <ZApplication Name="App" Caption="HUD Line" ClearColor="0 0 0 1" AmbientLightColor="0.7529 0.7529 0.7529 1" ScreenMode="0" CameraPosition="0 0 30" LightPosition="200 200 200" ViewportRatio="2" FOV="70" ClipFar="1000" MouseVisible="255" UseStencilBuffer="255" FileVersion="2">
   <Comment>
-<![CDATA[LyricText v1.1
+<![CDATA[LyricText v1.1.1
 
 
 LyricText is based off Rado1's HUD Text and uses his ZgeNanoVG library.
@@ -300,8 +300,7 @@ void hsv(float H, float S, float V, ref vec4 c)
       <Source>
 <![CDATA[const string AuthorInfo =
  "Impostorem\n" +
- "http://www.impostorem.com\n" +
- "Based on Rado1's ZgeNano library and HUD Text";
+ "http://www.impostorem.com\n";
 
 // PARAMETERS
 const string ParamHelpConst =
